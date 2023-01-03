@@ -22,15 +22,30 @@ async function getTestById(testId) {
     }
 }
 
-getTestById("676003").then(function (result) {
+async function createCommand(testId) {
+        const test = await getTestById(testId);
+        return test.type + test.description;
+    }
 
-    fs.writeFile('./test-details.json', JSON.stringify(result), err => {
-        if (err) {
-            console.log('Error writing file', err)
-        }
-    })
+ function writeToFile(fileName, command) {
+     fs.writeFile(fileName, command, err => {
+         if (err) {
+             console.log('Error writing file', err)
+         }
+     })
+ }
 
+createCommand("676003").then((command) => {
+    if (process.platform === "win32") {
+        writeToFile('./command-to-execute.bat', command)
+    } else {
+        writeToFile('./command-to-execute.sh', command)
+    }
 })
+
+
+
+
 
 
 
