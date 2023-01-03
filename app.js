@@ -35,7 +35,7 @@ async function createCommand(testId) {
      })
  }
 
-createCommand("676003").then((command) => {
+createCommand(process.env.testsToRun).then((command) => {
     if (process.platform === "win32") {
         writeToFile('./command-to-execute.bat', command)
     } else {
