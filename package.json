@@ -14,8 +14,10 @@
   "dependencies": {
     "@microfocus/alm-octane-js-rest-sdk": "^16.1.100-1",
     "axios": "^1.1.3",
+    "git-clone": "^0.2.0",
     "http": "0.0.1-security",
     "properties-reader": "^2.2.0",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "shelljs": "^0.8.5"
   }
 }
