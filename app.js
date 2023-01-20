@@ -43,7 +43,7 @@ async function createCommand(testDetails) {
 
     const projectPath = '/target'; //will be taken from test
     const classpath = './' + folderName + projectPath + '/*';
-    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + await test.data[0].class_name + ' C:\\Users\\AOncea\\Desktop\\output.xml ' + await test.data[0].name;
+    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + test.data[0].class_name + ' C:\\Users\\AOncea\\Desktop\\output.xml ' + test.data[0].name;
     return command;
 }
 
@@ -55,7 +55,7 @@ function writeToFile(fileName, command) {
     })
 }
 
-createCommand(process.env.testsToRun).then((command) => {
+createCommand(process.env.testsToRunConverted).then((command) => {
     if (process.platform === "win32") {
         writeToFile('./command-to-execute.bat', command)
     } else {
