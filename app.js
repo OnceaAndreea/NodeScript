@@ -55,7 +55,7 @@ function writeToFile(fileName, command) {
     })
 }
 
-createCommand("CalculatorTest#testSub").then((command) => {
+createCommand(process.env.testsToRun).then((command) => {
     if (process.platform === "win32") {
         writeToFile('./command-to-execute.bat', command)
     } else {
