@@ -43,7 +43,7 @@ async function createCommand(testDetails) {
 
     const projectPath = '/target'; //will be taken from test
     const classpath = './' + folderName + projectPath + '/*';
-    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + test.data[0].class_name + ' C:\\Users\\AOncea\\Desktop\\output.xml ' + test.data[0].name;
+    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + test.data[0].class_name  + test.data[0].name;
     return command;
 }
 
