@@ -1,8 +1,8 @@
-import {Octane} from '@microfocus/alm-octane-js-rest-sdk';
 import fs from 'fs';
 import PropertiesReader from 'properties-reader'
 import shell from "shelljs";
-import Query from "@microfocus/alm-octane-js-rest-sdk/dist/lib/query.js";
+import {Octane, Query} from "@microfocus/alm-octane-js-rest-sdk";
+
 
 const properties = PropertiesReader("./octane-details.properties");
 
@@ -14,23 +14,18 @@ const octane = new Octane({
     password: properties.get("password")
 })
 
-async function getTestByNameAndClassName(testDetailsAsString) {
+async function getTestByNameAndClassName(testClassName, testMethodName) {
     try {
-        // const query = Query.field('class_name')
-        // const test2 = await octane.get(Octane.entityTypes.tests).query(query.build()).execute();
-
-        const testDetailsAsArray = testDetailsAsString.split('#')
-        const className = testDetailsAsArray[0]
-        const testName = testDetailsAsArray[1]
-        const test = await octane.executeCustomRequest(`/api/shared_spaces/1001/workspaces/34003/tests?query="class_name EQ ^${className}^;name EQ ^${testName}^"&fields=name,description,class_name`, Octane.operationTypes.get)
+        const query = Query.field('class_name').equal(testClassName).and(Query.field('name').equal(testMethodName))
+        const test = await octane.get(Octane.entityTypes.tests).fields('name', 'class_name', 'description').query(query.build()).execute();
         return test;
     } catch (e) {
         console.log('caught error', e)
     }
 }
 
-async function createCommand(testDetails) {
-    const test = await getTestByNameAndClassName(testDetails);
+async function getCommand(testClassName, testMethodName) {
+    const test = await getTestByNameAndClassName(testClassName, testMethodName);
     const urlRepo = 'https://github.com/OnceaAndreea/SilkCentralDemo.git'; // will be taken from test
     const folderName = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
     try {
@@ -48,20 +43,39 @@ async function createCommand(testDetails) {
 }
 
 function writeToFile(fileName, command) {
-    fs.writeFile(fileName, command, err => {
+    fs.appendFile(fileName, command, err => {
         if (err) {
             console.log('Error writing file', err)
         }
     })
 }
 
-createCommand(process.env.testsToRunConverted).then((command) => {
-    if (process.platform === "win32") {
-        writeToFile('./command-to-execute.bat', command)
-    } else {
-        writeToFile('./command-to-execute.sh', command)
+function getExecutableFile(testsToRun) {
+    const classesAndTestsToRun = testsToRun.split(',');
+    const classAndTestsMap = new Map();
+    classesAndTestsToRun.forEach(function (value) {
+        const classAndTestsToRun = value.split('#')
+        classAndTestsMap.set(classAndTestsToRun[0], classAndTestsToRun[1].split('+'))
+
+    });
+    if (fs.existsSync('./command_to_execute.bat')) {
+        fs.unlinkSync('./command_to_execute.bat')
     }
-})
+    classAndTestsMap.forEach((value, key) => {
+        value.forEach(function (val) {
+            getCommand(key, val).then((command) => {
+                if (process.platform === "win32") {
+                    writeToFile('./command_to_execute.bat', command + "\n")
+                } else {
+                    writeToFile('./command-to-execute.sh', command + "\n")
+                }
+            })
+        });
+    })
+
+}
+
+getExecutableFile(process.env.testsToRunConverted)
 
 
 
