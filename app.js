@@ -106,6 +106,10 @@ function writeToFile(fileName, command) {
 
 async function getExecutableFile(testsToRun) {
 
+            if (fs.existsSync('./command_to_execute.bat')) {
+                fs.unlinkSync('./command_to_execute.bat')
+            }
+
             getCommand('CalculatorTest', 'testAdd').then((command) => {
                 if (process.platform === "win32") {
                     writeToFile('./command_to_execute.bat', command + "\n")
@@ -116,7 +120,7 @@ async function getExecutableFile(testsToRun) {
 
     }
 
-getExecutableFile(process.env.testsToRunConverted)
+getExecutableFile('CalculatorTest#testMultiply+testSub')
 
 
 
