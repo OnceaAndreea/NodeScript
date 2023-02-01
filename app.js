@@ -33,7 +33,7 @@ async function getCommand(testClassName, testMethodName) {
     createClasspathFolder(urlRepo, branchName, folderName)
     const projectPath = '/target'; //will be taken from test
     const classpath = './' + folderName + projectPath + '/*';
-    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + 'CalculatorTest'
+    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + test.data[0].class_name + ' ' + test.data[0].name;
     return command;
 }
 
@@ -79,48 +79,32 @@ function writeToFile(fileName, command) {
     })
 }
 
-// async function getExecutableFile(testsToRun) {
-//     const classesAndTestsToRun = testsToRun.split(',');
-//     const classAndTestsMap = new Map();
-//     classesAndTestsToRun.forEach(function (value) {
-//         const classAndTestsToRun = value.split('#')
-//         classAndTestsMap.set(classAndTestsToRun[0], classAndTestsToRun[1].split('+'))
-//
-//     });
-//     if (fs.existsSync('./command_to_execute.bat')) {
-//         fs.unlinkSync('./command_to_execute.bat')
-//     }
-//     classAndTestsMap.forEach((value, key) => {
-//         value.forEach(function (val) {
-//             getCommand(key, val).then((command) => {
-//                 if (process.platform === "win32") {
-//                     writeToFile('./command_to_execute.bat', command + "\n")
-//                 } else {
-//                     writeToFile('./command_to_execute.sh', command + "\n")
-//                 }
-//             })
-//         });
-//     })
-//
-// }
-
 async function getExecutableFile(testsToRun) {
+    const classesAndTestsToRun = testsToRun.split(',');
+    const classAndTestsMap = new Map();
+    classesAndTestsToRun.forEach(function (value) {
+        const classAndTestsToRun = value.split('#')
+        classAndTestsMap.set(classAndTestsToRun[0], classAndTestsToRun[1].split('+'))
 
-            if (fs.existsSync('./command_to_execute.bat')) {
-                fs.unlinkSync('./command_to_execute.bat')
-            }
-
-            getCommand('CalculatorTest', 'testAdd').then((command) => {
+    });
+    if (fs.existsSync('./command_to_execute.bat')) {
+        fs.unlinkSync('./command_to_execute.bat')
+    }
+    classAndTestsMap.forEach((value, key) => {
+        value.forEach(function (val) {
+            getCommand(key, val).then((command) => {
                 if (process.platform === "win32") {
                     writeToFile('./command_to_execute.bat', command + "\n")
                 } else {
                     writeToFile('./command_to_execute.sh', command + "\n")
                 }
             })
+        });
+    })
 
-    }
+}
 
-getExecutableFile('CalculatorTest#testMultiply+testSub')
+getExecutableFile('ColourTest#testBloodColour+testSunColour,CalculatorTest#testMultiply+testSub+testSub+testAdd')
 
 
 
