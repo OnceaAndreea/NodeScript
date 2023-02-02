@@ -104,7 +104,7 @@ async function getExecutableFile(testsToRun) {
 
 }
 
-getExecutableFile('ColourTest#testBloodColour+testSunColour,CalculatorTest#testMultiply+testSub+testSub+testAdd')
+getExecutableFile(process.env.testsToRunConverted)
 
 
 
