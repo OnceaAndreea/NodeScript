@@ -30,7 +30,7 @@ async function addToClasspath(testPath, testMethod, classpathSet) {
 
 
     getProjectLocally(urlRepo, branchName, projectFolder)
-    const jarsPath = 'AutomationDemo/target'; //will be taken from test
+    const jarsPath = '/AutomationDemo/target'; //will be taken from test
     const classpathValue = './' + projectFolder + jarsPath + '/*';
     classpathSet.add(classpathValue)
 }
@@ -107,7 +107,7 @@ async function getExecutableFile(testsToRun) {
 
 }
 
-getExecutableFile(process.env.testsToRunConverted)
+getExecutableFile('domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
 
 
 
