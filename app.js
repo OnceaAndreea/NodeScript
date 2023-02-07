@@ -14,30 +14,28 @@ const octane = new Octane({
     password: properties.get("password")
 })
 
-async function getTestByNameAndClassName(testClassName, testMethodName) {
-    try {
-        const query = Query.field('class_name').equal(testClassName).and(Query.field('name').equal(testMethodName))
-        const test = await octane.get(Octane.entityTypes.tests).fields('name', 'class_name', 'description').query(query.build()).execute();
-        return test;
-    } catch (e) {
-        console.log('caught error', e)
+async function addToClasspath(testPath, testMethod, classpathSet) {
+    let query;
+    if (testPath.lastIndexOf('.') > -1) {
+        const testPackage = testPath.substring(0, testPath.lastIndexOf('.'))
+        const testClass = testPath.substring(testPath.lastIndexOf('.') + 1, testPath.length)
+        query = Query.field('class_name').equal(testClass).and(Query.field('name').equal(testMethod)).and(Query.field('package').equal(testPackage))
+    } else {
+        query = Query.field('class_name').equal(testPath).and(Query.field('name').equal(testMethod))
     }
+    const test = await octane.get(Octane.entityTypes.tests).fields('name', 'class_name', 'description').query(query.build()).execute();
+    const urlRepo = 'https://github.com/OnceaAndreea/SilkCentralDemo.git'; // taken from test
+    const branchName = 'master' //taken from test
+    const projectFolder = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
+
+
+    getProjectLocally(urlRepo, branchName, projectFolder)
+    const jarsPath = 'AutomationDemo/target'; //will be taken from test
+    const classpathValue = './' + projectFolder + jarsPath + '/*';
+    classpathSet.add(classpathValue)
 }
 
-async function getCommand(testClassName, testMethodName) {
-    const test = await getTestByNameAndClassName(testClassName, testMethodName);
-    const urlRepo = 'https://github.com/OnceaAndreea/SilkCentralDemo.git'; // will be taken from test
-    const branchName = 'master' //taken from repo
-    const folderName = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
-
-    createClasspathFolder(urlRepo, branchName, folderName)
-    const projectPath = '/target'; //will be taken from test
-    const classpath = './' + folderName + projectPath + '/*';
-    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + test.data[0].class_name + ' ' + test.data[0].name;
-    return command;
-}
-
-function createClasspathFolder(urlRepo, branchName, folderName) {
+function getProjectLocally(urlRepo, branchName, folderName) {
     try {
         if (!fs.existsSync("./" + folderName)) {
             shell.exec('git clone ' + urlRepo)
@@ -87,24 +85,31 @@ async function getExecutableFile(testsToRun) {
         classAndTestsMap.set(classAndTestsToRun[0], classAndTestsToRun[1].split('+'))
 
     });
+
+    const classpathSet = new Set()
+    for (const [testPath, testMethods] of classAndTestsMap) {
+        for (const testMethod of testMethods) {
+            await addToClasspath(testPath, testMethod, classpathSet)
+        }
+    }
+    classpathSet.add("/.dhhfdh")
+    classpathSet.add("/.dhhfdnfndnnf")
+
+    const classPathAsString = Array.from(classpathSet).join(' ').toString().replace(/ /g, ";")
+    const command = 'java -cp "' + classPathAsString + '" JUnitCmdLineWrapper ' + testsToRun.replace(/,/g," ")
+
     if (fs.existsSync('./command_to_execute.bat')) {
         fs.unlinkSync('./command_to_execute.bat')
     }
-    classAndTestsMap.forEach((value, key) => {
-        value.forEach(function (val) {
-            getCommand(key, val).then((command) => {
-                if (process.platform === "win32") {
-                    writeToFile('./command_to_execute.bat', command + "\n")
-                } else {
-                    writeToFile('./command_to_execute.sh', command + "\n")
-                }
-            })
-        });
-    })
+    if (process.platform === "win32") {
+        writeToFile('./command_to_execute.bat', command)
+    } else {
+        writeToFile('./command_to_execute.sh', command)
+    }
 
 }
 
-getExecutableFile(process.env.testsToRunConverted)
+getExecutableFile('CalculatorTest#testAdd,domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
 
 
 
