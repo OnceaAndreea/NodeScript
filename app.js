@@ -107,7 +107,7 @@ async function getExecutableFile(testsToRun) {
 
 }
 
-getExecutableFile('domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
+getExecutableFile(process.env.testsToRunConverted)
 
 
 
