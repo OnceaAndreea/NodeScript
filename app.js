@@ -92,8 +92,6 @@ async function getExecutableFile(testsToRun) {
             await addToClasspath(testPath, testMethod, classpathSet)
         }
     }
-    classpathSet.add("/.dhhfdh")
-    classpathSet.add("/.dhhfdnfndnnf")
 
     const classPathAsString = Array.from(classpathSet).join(' ').toString().replace(/ /g, ";")
     const command = 'java -cp "' + classPathAsString + '" JUnitCmdLineWrapper ' + testsToRun.replace(/,/g," ")
@@ -109,7 +107,7 @@ async function getExecutableFile(testsToRun) {
 
 }
 
-getExecutableFile('CalculatorTest#testAdd,domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
+getExecutableFile(process.env.testsToRunConverted)
 
 
 
