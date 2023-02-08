@@ -36,7 +36,7 @@ async function getCommand(testPath, testMethod) {
     const folderName = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
 
     createClasspathFolder(urlRepo, branchName, folderName)
-    const projectPath = '/target'; //will be taken from test
+    const projectPath = '/AutomationDemo/target'; //will be taken from test
     const classpath = './' + folderName + projectPath + '/*';
     const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + testPath + ' ' + testMethod
     return command;
