@@ -3,7 +3,6 @@ import PropertiesReader from 'properties-reader'
 import shell from "shelljs";
 import {Octane, Query} from "@microfocus/alm-octane-js-rest-sdk";
 
-
 const properties = PropertiesReader("./octane-details.properties");
 
 const octane = new Octane({
@@ -14,18 +13,24 @@ const octane = new Octane({
     password: properties.get("password")
 })
 
-async function getTestByNameAndClassName(testClassName, testMethodName) {
+async function getOctaneTest(testPath, testMethod) {
     try {
-        const query = Query.field('class_name').equal(testClassName).and(Query.field('name').equal(testMethodName))
-        const test = await octane.get(Octane.entityTypes.tests).fields('name', 'class_name', 'description').query(query.build()).execute();
-        return test;
+        let query;
+        if (testPath.lastIndexOf('.') > -1) {
+            const testPackage = testPath.substring(0, testPath.lastIndexOf('.'))
+            const testClass = testPath.substring(testPath.lastIndexOf('.') + 1, testPath.length)
+            query = Query.field('class_name').equal(testClass).and(Query.field('name').equal(testMethod)).and(Query.field('package').equal(testPackage))
+        } else {
+            query = Query.field('class_name').equal(testPath).and(Query.field('name').equal(testMethod))
+        }
+        return await octane.get(Octane.entityTypes.tests).fields('name', 'class_name', 'description', 'package').query(query.build()).execute();
     } catch (e) {
         console.log('caught error', e)
     }
 }
 
-async function getCommand(testClassName, testMethodName) {
-    const test = await getTestByNameAndClassName(testClassName, testMethodName);
+async function getCommand(testPath, testMethod) {
+    const test = await getOctaneTest(testPath, testMethod);
     const urlRepo = 'https://github.com/OnceaAndreea/SilkCentralDemo.git'; // will be taken from test
     const branchName = 'master' //taken from repo
     const folderName = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
@@ -33,7 +38,7 @@ async function getCommand(testClassName, testMethodName) {
     createClasspathFolder(urlRepo, branchName, folderName)
     const projectPath = '/target'; //will be taken from test
     const classpath = './' + folderName + projectPath + '/*';
-    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + test.data[0].class_name + ' ' + test.data[0].name;
+    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + testPath + ' ' + testMethod
     return command;
 }
 
@@ -90,21 +95,33 @@ async function getExecutableFile(testsToRun) {
     if (fs.existsSync('./command_to_execute.bat')) {
         fs.unlinkSync('./command_to_execute.bat')
     }
-    classAndTestsMap.forEach((value, key) => {
-        value.forEach(function (val) {
-            getCommand(key, val).then((command) => {
-                if (process.platform === "win32") {
-                    writeToFile('./command_to_execute.bat', command + "\n")
-                } else {
-                    writeToFile('./command_to_execute.sh', command + "\n")
-                }
-            })
-        });
-    })
 
+    const commandsArray = new Array();
+
+    for (const [testPath, testMethods] of classAndTestsMap) {
+        for (const testMethod of testMethods) {
+            await getCommand(testPath, testMethod).then((command) => {
+                commandsArray.push(command)
+            })
+        }
+    }
+    let isFirstTestFromASuite = true;
+    commandsArray.forEach(command => {
+        const cmd = command.split('JUnitCmdLineWrapper')
+        const cmdUpdated = cmd[0] + 'JUnitCmdLineWrapper' + ' ' + isFirstTestFromASuite + cmd[1];
+        if (isFirstTestFromASuite === true) {
+            isFirstTestFromASuite = false;
+        }
+        if (process.platform === "win32") {
+            writeToFile('./command_to_execute.bat', cmdUpdated + "\n")
+        } else {
+            writeToFile('./command_to_execute.sh', cmdUpdated + "\n")
+        }
+    })
 }
 
 getExecutableFile(process.env.testsToRunConverted)
+// getExecutableFile('domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
 
 
 
