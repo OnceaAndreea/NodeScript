@@ -89,28 +89,32 @@ async function getExecutableFile(testsToRun) {
         fs.unlinkSync('./command_to_execute.bat')
     }
 
+    if (fs.existsSync('./testResults')) {
+        fs.rmdirSync('./testResults', {recursive: true})
+    }
+
     const commandsArray = [];
 
     for (const [testPath, testMethods] of classAndTestsMap) {
         for (const testMethod of testMethods) {
             await getCommand(testPath, testMethod).then((command) => {
-                commandsArray.push(command)
+                fs.appendFileSync('./command_to_execute.bat', command + "\n")
             })
         }
     }
-    let isFirstTestFromASuite = true;
-    for (const command of commandsArray) {
-        const cmd = command.split('JUnitCmdLineWrapper')
-        const cmdUpdated = cmd[0] + 'JUnitCmdLineWrapper' + ' ' + isFirstTestFromASuite + cmd[1];
-        if (isFirstTestFromASuite === true) {
-            isFirstTestFromASuite = false;
-        }
-        if (process.platform === "win32") {
-            fs.appendFileSync('./command_to_execute.bat', cmdUpdated + "\n")
-        } else {
-            fs.appendFileSync('./command_to_execute.sh', cmdUpdated + "\n")
-        }
-    }
+    // let isFirstTestFromASuite = true;
+    // for (const command of commandsArray) {
+    //     const cmd = command.split('JUnitCmdLineWrapper')
+    //     const cmdUpdated = cmd[0] + 'JUnitCmdLineWrapper' + ' ' + isFirstTestFromASuite + cmd[1];
+    //     if (isFirstTestFromASuite === true) {
+    //         isFirstTestFromASuite = false;
+    //     }
+    //     if (process.platform === "win32") {
+    //         fs.appendFileSync('./command_to_execute.bat', cmdUpdated + "\n")
+    //     } else {
+    //         fs.appendFileSync('./command_to_execute.sh', cmdUpdated + "\n")
+    //     }
+    // }
 }
 
 getExecutableFile(process.env.testsToRunConverted)
