@@ -76,14 +76,6 @@ function createClasspathFolder(urlRepo, branchName, folderName) {
     }
 }
 
-function writeToFile(fileName, command) {
-    fs.appendFile(fileName, command, err => {
-        if (err) {
-            console.log('Error writing file', err)
-        }
-    })
-}
-
 async function getExecutableFile(testsToRun) {
     const classesAndTestsToRun = testsToRun.split(',');
     const classAndTestsMap = new Map();
@@ -96,7 +88,7 @@ async function getExecutableFile(testsToRun) {
         fs.unlinkSync('./command_to_execute.bat')
     }
 
-    const commandsArray = new Array();
+    const commandsArray = [];
 
     for (const [testPath, testMethods] of classAndTestsMap) {
         for (const testMethod of testMethods) {
@@ -106,22 +98,22 @@ async function getExecutableFile(testsToRun) {
         }
     }
     let isFirstTestFromASuite = true;
-    commandsArray.forEach(command => {
+    for (const command of commandsArray) {
         const cmd = command.split('JUnitCmdLineWrapper')
         const cmdUpdated = cmd[0] + 'JUnitCmdLineWrapper' + ' ' + isFirstTestFromASuite + cmd[1];
         if (isFirstTestFromASuite === true) {
             isFirstTestFromASuite = false;
         }
         if (process.platform === "win32") {
-            writeToFile('./command_to_execute.bat', cmdUpdated + "\n")
+            fs.appendFileSync('./command_to_execute.bat', cmdUpdated + "\n")
         } else {
-            writeToFile('./command_to_execute.sh', cmdUpdated + "\n")
+            fs.appendFileSync('./command_to_execute.sh', cmdUpdated + "\n")
         }
-    })
+    }
 }
 
-getExecutableFile(process.env.testsToRunConverted)
-// getExecutableFile('domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
+// getExecutableFile(process.env.testsToRunConverted)
+getExecutableFile('domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
 
 
 
