@@ -23,23 +23,38 @@ async function getOctaneTest(testPath, testMethod) {
         } else {
             query = Query.field('class_name').equal(testPath).and(Query.field('name').equal(testMethod))
         }
-        return await octane.get(Octane.entityTypes.tests).fields('name', 'class_name', 'description', 'package').query(query.build()).execute();
+        return await octane.get(Octane.entityTypes.tests).fields('name', 'owner', 'class_name', 'description', 'package', 'classpath_udf', 'branch_udf', 'configuration_type_udf', 'repourl_udf', 'projectpath_udf').query(query.build()).execute();
     } catch (e) {
         console.log('caught error', e)
     }
 }
 
+async function getListValueById(valueId) {
+    const query = Query.field('id').equal(valueId)
+    return await octane.get(Octane.entityTypes.listNodes).fields('name').query(query.build()).execute();
+}
+
 async function getCommand(testPath, testMethod) {
     const test = await getOctaneTest(testPath, testMethod);
-    const urlRepo = 'https://github.com/OnceaAndreea/SilkCentralDemo.git'; // will be taken from test
-    const branchName = 'master' //taken from repo
+    const configurationTypeValue = await getListValueById(test.data[0].configuration_type_udf.id)
+    const configurationTypeName = configurationTypeValue.data[0].name
+    const urlRepo = test.data[0].repourl_udf;
+    const branchName = test.data[0].branch_udf
     const folderName = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
 
     createClasspathFolder(urlRepo, branchName, folderName)
-    // const projectPath = '/AutomationDemo/target'; //will be taken from test
-    const projectPath = '/AutomationDemo/target'; //will be taken from test
-    const classpath = './' + folderName + projectPath + '/*';
-    const command = 'java -cp "' + classpath + '" JUnitCmdLineWrapper ' + testPath + ' ' + testMethod
+    const projectPath = test.data[0].projectpath_udf;
+    const classpath = test.data[0].classpath_udf
+    const totalClasspath = './' + folderName + projectPath + '/*';
+    const lastIndexOfUnderline = testMethod.lastIndexOf("_")
+    let command;
+    if (configurationTypeName === "isMethod") {
+        command = 'java -cp "' + totalClasspath + '" JUnitCmdLineWrapper ' + testPath + ' ' + testMethod.substring(0, lastIndexOfUnderline)
+    } else if (configurationTypeName === "isClass") {
+        command = 'java -cp "' + totalClasspath + '" JUnitCmdLineWrapper ' + testPath + ' ' + null;
+    } else {
+        command = 'java -cp "' + totalClasspath + '" JUnitCmdLineWrapper ' + "RunMeAsAJar" + ' ' + null
+    }
     return command;
 }
 
@@ -117,8 +132,8 @@ async function getExecutableFile(testsToRun) {
     // }
 }
 
-getExecutableFile(process.env.testsToRunConverted)
-// getExecutableFile('domains.animals.AnimalTest#checkIfCatVaccinated+checkCatAge+checkCatName,domains.jobs.TeacherTest#checkAge')
+// getExecutableFile(process.env.testsToRunConverted)
+getExecutableFile('domains.animals.AnimalTest#checkCatName_23455,domains.jobs.TeacherTest#checkAge_23455')
 
 
 
