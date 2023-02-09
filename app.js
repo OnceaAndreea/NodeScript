@@ -132,8 +132,8 @@ async function getExecutableFile(testsToRun) {
     // }
 }
 
-// getExecutableFile(process.env.testsToRunConverted)
-getExecutableFile('domains.animals.AnimalTest#checkCatName_23455,domains.jobs.TeacherTest#checkAge_23455')
+getExecutableFile(process.env.testsToRunConverted)
+// getExecutableFile('domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455')
 
 
 
