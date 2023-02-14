@@ -56,18 +56,16 @@ async function getCommand(testPath, testMethod, runnerJarPath) {
     let testsClasspath = "";
     jars.forEach(function (value) {
         testsClasspath += rootClasspath + value.substring(1, value.length) + ";"
-        console.log(value)
-
     });
     testsClasspath = testsClasspath.substring(0, testsClasspath.lastIndexOf(';'))
 
     let command;
     if (configurationTypeName === "method based") {
-        command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" JUnitCmdLineWrapper ' + testPath + ' ' + testMethod.substring(0, lastIndexOfUnderline) + ' ' + testMethod
+        command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" ' + testPath + ' ' + testMethod.substring(0, lastIndexOfUnderline) + ' ' + testMethod
     } else if (configurationTypeName === "class based") {
-        command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" JUnitCmdLineWrapper ' + testPath + ' ' + null + ' ' + testMethod
+        command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" ' + testPath + ' ' + null + ' ' + testMethod
     } else {
-        command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" JUnitCmdLineWrapper ' + "RunMeAsAJar" + ' ' + null + ' ' + testMethod
+        command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" ' + "RunMeAsAJar" + ' ' + null + ' ' + testMethod
     }
     return command;
 }
@@ -132,7 +130,7 @@ async function getExecutableFile(testsToRun, runnerJarPath) {
 }
 
 getExecutableFile(process.env.testsToRunConverted, process.env.runnerJarPath)
-// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')
+// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')
 // getExecutableFile('domains.animals.AnimalTest#checkCatName_23455,domains.jobs.TeacherTest#checkAge_23455')
 
 
