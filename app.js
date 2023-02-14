@@ -131,9 +131,9 @@ async function getExecutableFile(testsToRun, runnerJarPath) {
     }
 }
 
-// getExecutableFile(process.env.testsToRunConverted, process.env.runnerJarPath)
+getExecutableFile(process.env.testsToRunConverted, process.env.runnerJarPath)
 // getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')
-getExecutableFile('domains.animals.AnimalTest#checkCatName_23455,domains.jobs.TeacherTest#checkAge_23455')
+// getExecutableFile('domains.animals.AnimalTest#checkCatName_23455,domains.jobs.TeacherTest#checkAge_23455')
 
 
 
