@@ -27,7 +27,7 @@ async function getOctaneTest(testPath, testMethod) {
         } else {
             query = Query.field('name').equal(testMethod).and(Query.field('class_name').equal(Query.NULL)).and(Query.field('package').equal(Query.NULL)).and(Query.field('component').equal(Query.NULL))
         }
-        return await octane.get(Octane.entityTypes.tests).fields('name', 'owner', 'class_name', 'description', 'package', 'classpath_udf', 'branch_udf', 'configuration_type_udf', 'repourl_udf', 'projectpath_udf').query(query.build()).execute();
+        return await octane.get(Octane.entityTypes.tests).fields('name', 'owner', 'class_name', 'description', 'package', 'sc_classpath_udf', 'sc_branch_udf', 'sc_configuration_type_udf', 'sc_repo_url_udf', 'sc_project_path_udf').query(query.build()).execute();
     } catch (e) {
         console.log('caught error', e)
     }
@@ -40,15 +40,15 @@ async function getListValueById(valueId) {
 
 async function getCommand(testPath, testMethod, runnerJarPath) {
     const test = await getOctaneTest(testPath, testMethod);
-    const configurationTypeValue = await getListValueById(test.data[0].configuration_type_udf.id)
+    const configurationTypeValue = await getListValueById(test.data[0].sc_configuration_type_udf.id)
     const configurationTypeName = configurationTypeValue.data[0].name
-    const urlRepo = test.data[0].repourl_udf;
-    const branchName = test.data[0].branch_udf
+    const urlRepo = test.data[0].sc_repo_url_udf
+    const branchName = test.data[0].sc_branch_udf
     const folderName = urlRepo.substring(urlRepo.lastIndexOf("/") + 1, urlRepo.indexOf(".git"))
 
     createClasspathFolder(urlRepo, branchName, folderName)
-    const projectPath = test.data[0].projectpath_udf;
-    const classpath = test.data[0].classpath_udf
+    const projectPath = test.data[0].sc_project_path_udf;
+    const classpath = test.data[0].sc_classpath_udf
     const rootClasspath = './' + folderName + projectPath;
     const lastIndexOfUnderline = testMethod.lastIndexOf("_")
 
@@ -62,9 +62,9 @@ async function getCommand(testPath, testMethod, runnerJarPath) {
     testsClasspath = testsClasspath.substring(0, testsClasspath.lastIndexOf(';'))
 
     let command;
-    if (configurationTypeName === "isMethod") {
+    if (configurationTypeName === "method based") {
         command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" JUnitCmdLineWrapper ' + testPath + ' ' + testMethod.substring(0, lastIndexOfUnderline) + ' ' + testMethod
-    } else if (configurationTypeName === "isClass") {
+    } else if (configurationTypeName === "class based") {
         command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" JUnitCmdLineWrapper ' + testPath + ' ' + null + ' ' + testMethod
     } else {
         command = 'java -cp "' + testsClasspath + ";" + runnerJarPath + '" JUnitCmdLineWrapper ' + "RunMeAsAJar" + ' ' + null + ' ' + testMethod
@@ -131,11 +131,13 @@ async function getExecutableFile(testsToRun, runnerJarPath) {
     }
 }
 
-getExecutableFile(process.env.testsToRunConverted, process.env.runnerJarPath)
-// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')
-//
-//
-//
+// getExecutableFile(process.env.testsToRunConverted, process.env.runnerJarPath)
+// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')// getExecutableFile('#SCNameForJarBased_1234,domains.animals.AnimalTest#checkCatName_23455+SilkCentralName_1234,domains.jobs.TeacherTest#checkAge_23455', 'D:\\Projects\\SilkCentralDemo\\AutomationDemo\\target\\JunitWrapper-1.0-SNAPSHOT-jar-with-dependencies.jar')
+getExecutableFile('domains.animals.AnimalTest#checkCatName_23455,domains.jobs.TeacherTest#checkAge_23455')
+
+
+
+
 
 
 
